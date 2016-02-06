@@ -1,10 +1,19 @@
-module ConstraintWitness.Plugin.Util where
+{-# LANGUAGE
+    ExistentialQuantification,
+    RankNTypes,
+    ImpredicativeTypes
+    #-}
+
+module ConstraintWitness.Plugin.Instances where
+
+import Prelude hiding (init)
 
 import Data.Monoid
 import Data.List (union)
-import Control.Monad (sequence, traverse)
+import Data.Traversable (traverse)
+import Control.Monad (sequence, void)
 
-import GhcPlugins
+import GhcPlugins ()
 import TcRnTypes (TcPlugin(..), TcPluginResult(..))
 
 -- | Straightforward plugin-result composition
@@ -22,22 +31,12 @@ instance Monoid TcPluginResult where
 --   consist of the bad ones for *both* plugins.
 instance Monoid TcPlugin where
     mempty =
-        TcPlugin { init  = return ()
-                 , stop  = \() -> return ()
-                 , solve = \state given derived wanted -> return TcPluginOk [] [] }
-    mappend plug1 plug2 =
-        TcPlugin { init  = (,) <$> (init plug1) <*> (init plug2)
-                 , stop  = \(s1, s2) -> stop plug1 s1 >> stop plug2 s2
-                 , solve = \(s1, s2) given derived wanted ->
-                     mappend <$> solve plug1 s1 given derived wanted
-                             <*> solve plug2 s2 given derived wanted }
-    -- | This implementation uses specialised folds "deeper down" in the plugin structure,
-    --   so it's more efficient than the default @'foldr' 'mappend' 'mempty'@.
-    --   It's not literally the same as the default, because it uses lists rather than nested tuples;
-    --   but that's not exposed, it's hidden by the forall in TcPlugin's type. And it's more efficient.
-    mconcat [] = mempty
-    mconcat plugins =
-        TcPlugin { init  = traverse init plugins
-                 , stop  = sequence . zipWith stop plugins
-                 , solve = \states given derived wanted ->
-                     mconcat <$> sequence $ zipWith (\state plug -> solve plug given derived wanted) states plugins }
+        TcPlugin (return ())
+                 (\state given derived wanted -> return $ TcPluginOk [] [])
+                 (\() -> return ())
+    mappend (TcPlugin init1 solve1 stop1) (TcPlugin init2 solve2 stop2) =
+        TcPlugin ((,) <$> (init1) <*> (init2))
+                 (\(s1, s2) given derived wanted ->
+                     mappend <$> solve1 s1 given derived wanted
+                             <*> solve2 s2 given derived wanted)
+                 (\(s1, s2) -> stop1 s1 >> stop2 s2)
