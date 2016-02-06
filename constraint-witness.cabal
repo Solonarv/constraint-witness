@@ -40,5 +40,7 @@ Library
   Build-Depends:        base, ghc >= 7.10, ghc-prim, ghc-tcplugins-extra, HList == 0.4.*
   Exposed-Modules:
     ConstraintWitness.Plugin,
-    ConstraintWitness.Internal
+    ConstraintWitness.Internal,
+    ConstraintWitness.Plugin.Witness,
+    ConstraintWitness.Plugin.Instances
   Hs-Source-Dirs:       plugin
