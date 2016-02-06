@@ -2,7 +2,10 @@
     TypeFamilies,
     KindSignatures,
     ConstraintKinds,
-    ExplicitNamespaces
+    ExplicitNamespaces,
+    GADTs,
+    TypeOperators,
+    DataKinds
     #-}
 
 module ConstraintWitness.Internal (
