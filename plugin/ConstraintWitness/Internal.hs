@@ -14,6 +14,7 @@ module ConstraintWitness.Internal (
     ) where
 
 import Data.Type.Equality ((:~:)(..))
+import Data.HList
 
 import GHC.Prim (Constraint)
 
@@ -26,6 +27,15 @@ import GHC.Prim (Constraint)
 type family Witness (ct :: Constraint) :: * where
     Witness c = () -- Bogus equation so GHC doesn't choke
 
-class HasDict (ct :: Constraint) where
-    type Dict ct
-    dict :: proxy ct -> Dict ct
+class IsTypeClass (ct :: Constraint) where
+    type Dict ct :: *
+
+class HasClasses (cts :: [Constraint]) where
+    type Dicts cts :: [*]
+
+instance HasClasses '[] where type Dicts '[] = '[]
+
+instance {-# OVERLAPS #-} (IsTypeClass ct, HasClasses cts) => HasClasses (ct ': cts) where
+    type Dicts (ct ': cts) = Dict ct ': Dicts cts
+
+instance HasClasses cts => HasClasses (ct ': cts) where type Dicts (ct ': cts) = Dicts cts
