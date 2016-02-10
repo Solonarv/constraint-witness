@@ -9,11 +9,11 @@ module ConstraintWitness.Plugin.Witness (
     ) where
 
 -- external
-import GHC.TcPluginM.Extra (evByFiat, lookupModule, lookupName, newWanted)
-import Data.Maybe (mapMaybe)
-import Data.Either (partitionEithers)
-import Data.Bifunctor (bimap, second)
-import Control.Monad (guard)
+import GHC.TcPluginM.Extra  (evByFiat, lookupModule, lookupName, newWanted)
+import Data.Maybe           (mapMaybe)
+import Data.Either          (partitionEithers)
+import Data.Bifunctor       (bimap, second)
+import Control.Monad        (guard)
 
 -- GHC API
 import GhcPlugins   (Plugin(..), defaultPlugin)
@@ -46,6 +46,8 @@ data State = State { witness    :: TyCon -- ^ constraint-witness:ConstraintWitne
                    , cons       :: TyCon -- ^ ghc-prim:GHC.Types (:), lifted.
                    , nil        :: Type  -- ^ ghc-prim:GHC.Types ([]), the lifted constructor (NOT the type!)
                    }
+
+simplePlugin :: SimpleTcPlugin
 
 -- | Find the type family constructors we need.
 findTyCons :: TcPluginM State

@@ -4,7 +4,7 @@
     ImpredicativeTypes
     #-}
 
-module ConstraintWitness.Plugin.Instances where
+module ConstraintWitness.TcPlugin.Instances where
 
 import Prelude hiding (init)
 
