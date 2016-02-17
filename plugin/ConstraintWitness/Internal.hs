@@ -39,3 +39,8 @@ instance {-# OVERLAPS #-} (IsTypeClass ct, HasClasses cts) => HasClasses (ct ': 
     type Dicts (ct ': cts) = Dict ct ': Dicts cts
 
 instance HasClasses cts => HasClasses (ct ': cts) where type Dicts (ct ': cts) = Dicts cts
+
+-- | Tries to provide a canonical witness for the given constraint. This is Refl for equality constraints, the dictionary for typeclass constraints, the implicit parameter's value for ImplicitParams, and a HList of the component constraints' canonical witnesses for conjoined constrints.
+canonicalWitness :: forall (ct :: Constraint). ct => Witness ct
+canonicalWitness = undefined -- implemented by compiler plug in
+{-# NOINLINE canonicalWitness #-}
