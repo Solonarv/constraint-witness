@@ -1,7 +1,7 @@
 module ConstraintWitness.Plugin where
 
 import ConstraintWitness.Plugin.Witness (witnessPlugin)
-import ConstraintWitness.TcPlugin.Instances
+-- import ConstraintWitness.TcPlugin.Instances
 
 import GhcPlugins (Plugin(..), defaultPlugin)
 
