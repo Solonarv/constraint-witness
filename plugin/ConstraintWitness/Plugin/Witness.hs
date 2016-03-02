@@ -15,6 +15,7 @@ import Data.Either          (partitionEithers)
 import Data.Bifunctor       (bimap, second)
 import Data.IORef           (writeIORef)
 import Control.Monad        (guard)
+import System.IO.Unsafe     (unsafePerformIO)
 
 -- GHC API
 import GhcPlugins   (Plugin(..), defaultPlugin)
@@ -49,6 +50,12 @@ data State = State { witness    :: TyCon -- ^ constraint-witness:ConstraintWitne
                    , nil        :: Type  -- ^ ghc-prim:GHC.Types ([]), the lifted constructor (NOT the type!)
                    }
 
+data WitnessEquality = WitnessEquality {
+    we_loc     :: CtLoc,
+    we_precond :: PredType,
+    we_ev      :: EvTerm,
+    we_derived :: Ct }
+
 -- | Find the type family constructors we need.
 findTyCons :: TcPluginM State
 findTyCons = do
@@ -78,14 +85,12 @@ findTyCons = do
 -- | The actual constraint solver
 solveWitness :: State -> [Ct] -> [Ct] -> [Ct] -> TcPluginM TcPluginResult
 solveWitness _ givens deriveds [] = return (TcPluginOk [] [])
-solveWitness (State{..}) givens deriveds wanteds = case failed of
-    [] -> TcPluginOk solved <$> traverse (fmap CNonCanonical . uncurry newWanted) new
-    _  -> return $ TcPluginContradiction failed
+solveWitness (State{..}) givens deriveds wanteds =
+    TcPluginOk [(we_ev, we_derived) | WitnessEquality{..} <- touched] <$> sequence [CNonCanonical <$> newWanted we_loc we_precond | WitnessEquality{..} <- touched]    
   where
-    failed :: [Ct]
-    new    :: [(CtLoc, PredType)]
-    solved :: [(EvTerm, Ct)]
-    (failed, (new, solved)) = second unzip $ partitionEithers $ map (toWitnessEquality $ State{..}) wanteds
+    untouched :: [Ct]
+    touched   :: [WitnessEquality]
+    (untouched, touched) = partitionEithers $ map (toWitnessEquality State{..}) wanteds
 
 -- | Check if a constraint is an equality constraint with (Witness a) on one or both sides
 --   @'toWitnessEquality' s ct@ is either:
@@ -95,7 +100,7 @@ solveWitness (State{..}) givens deriveds wanteds = case failed of
 --     - @'Left' ct@, when the above isn't the case.
 toWitnessEquality :: State -- ^ The type constructors we need
                   -> Ct    -- ^ The constraint to pattern-match on
-                  -> Either Ct ((CtLoc, PredType), (EvTerm, Ct))
+                  -> Either Ct WitnessEquality
 toWitnessEquality (State{..}) ct = 
     case classifyPredType $ ctEvPred $ ctEvidence ct of
         EqPred NomEq lhs rhs ->
@@ -107,8 +112,14 @@ toWitnessEquality (State{..}) ct =
                 rhs' <- case rhs of
                     TyConApp con [arg] | con == witness -> constructWitness (State{..}) arg
                     _                                   -> Just rhs
-                guard $ lhs' /= lhs || rhs' /= rhs
-                Just ((ctLoc ct, mkEqPred lhs rhs), (evByFiat "magical-type-family:Witness" lhs rhs, ct))
+                if lhs' /= lhs || rhs' /= rhs
+                  then unsafePerformIO (putStrLn "found an equality with Witness") `seq` Just ()
+                  else Nothing
+                Just $ WitnessEquality {
+                    we_loc      = ctLoc ct,
+                    we_precond  = mkEqPred lhs rhs,
+                    we_ev       = evByFiat "magical-type-family:Witness" lhs rhs,
+                    we_derived   = ct }
           in
             case mbNewEq of
                 Nothing -> Left ct
