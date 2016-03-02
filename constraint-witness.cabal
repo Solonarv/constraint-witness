@@ -42,5 +42,5 @@ Library
     ConstraintWitness.Plugin,
     ConstraintWitness.Internal,
     ConstraintWitness.Plugin.Witness,
-    ConstraintWitness.Plugin.Instances
+    ConstraintWitness.TcPlugin.Instances
   Hs-Source-Dirs:       plugin

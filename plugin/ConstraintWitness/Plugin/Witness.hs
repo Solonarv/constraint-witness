@@ -47,8 +47,6 @@ data State = State { witness    :: TyCon -- ^ constraint-witness:ConstraintWitne
                    , nil        :: Type  -- ^ ghc-prim:GHC.Types ([]), the lifted constructor (NOT the type!)
                    }
 
-simplePlugin :: SimpleTcPlugin
-
 -- | Find the type family constructors we need.
 findTyCons :: TcPluginM State
 findTyCons = do
