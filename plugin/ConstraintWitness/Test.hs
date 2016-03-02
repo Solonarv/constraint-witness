@@ -1,3 +1,9 @@
+{-# OPTIONS_GHC -fplugin ConstraintWitness.Plugin #-}
+
+{-# LANGUAGE
+    TypeOperators
+    #-}
+
 module ConstraintWitness.Test where
 
 import ConstraintWitness.Internal

@@ -13,6 +13,7 @@ import GHC.TcPluginM.Extra  (evByFiat, lookupModule, lookupName, newWanted)
 import Data.Maybe           (mapMaybe)
 import Data.Either          (partitionEithers)
 import Data.Bifunctor       (bimap, second)
+import Data.IORef           (writeIORef)
 import Control.Monad        (guard)
 
 -- GHC API
@@ -22,13 +23,14 @@ import FastString   (fsLit)
 import OccName      (mkTcOcc, mkOccName, dataName, occNameString)
 import Name         (nameOccName, nameUnique)
 import Module       (mkModuleName)
-import TcPluginM    (TcPluginM, tcLookupTyCon, tcLookupDataCon)
+import TcPluginM    (TcPluginM, tcLookupTyCon, tcLookupDataCon, tcPluginIO)
 import TcEvidence   (EvTerm)
 import TyCon        (TyCon, tyConDataCons, tyConRoles, mkPromotedDataCon)
 import Type         (EqRel (NomEq), PredTree (..), classifyPredType, mkEqPred, typeKind)
 import TypeRep      (Type(..), PredType)
 import Kind         (constraintKind, liftedTypeKind)
 import DataCon      (dataConTyCon, dataConName, DataCon)
+import StaticFlags  (v_opt_C_ready) -- THIS IS A HORRIBLE HACK BECAUSE THE API SUCKS
 
 witnessPlugin :: TcPlugin
 witnessPlugin = TcPlugin {
@@ -50,8 +52,9 @@ data State = State { witness    :: TyCon -- ^ constraint-witness:ConstraintWitne
 -- | Find the type family constructors we need.
 findTyCons :: TcPluginM State
 findTyCons = do
+    -- This is an utterly horrible hack. I know. But there's no reinitializeGlobals equivalent for TcPluginM.
+    tcPluginIO $ writeIORef v_opt_C_ready True
     witness     <- summonTc "constraint-witness"    "ConstraintWitness.Internal"    "Witness"
-    istypeclass <- summonTc "constraint-witness"    "ConstraintWitness.Internal"    "IsTypeClass"
     eq          <- summonTc "base"                  "Data.Type.Equality"            ":~:"
     hlist       <- summonTc "HList"                 "Data.HList.HList"              "HList"
     list        <- summonTc "ghc-prim"              "GHC.Types"                     "[]"
