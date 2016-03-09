@@ -7,7 +7,8 @@
     TypeOperators,
     DataKinds,
     RankNTypes,
-    AllowAmbiguousTypes
+    AllowAmbiguousTypes,
+    RecordWildCards
     #-}
 
 module ConstraintWitness.Internal (
@@ -64,3 +65,11 @@ expose thing witness = undefined
 -- | Alias of expose, with the arguments flipped. This is mostly useful as an argument to higher-order functions.
 useWitness :: forall (ct :: Constraint) a. Witness ct -> (ct => a) -> a
 useWitness witness thing = undefined
+
+data Isomorphism a b = Iso {appIso :: a -> b, appRevIso :: b -> a}
+
+mkIso :: (a -> b) -> (b -> a) -> Isomorphism a b
+mkIso fwd bwd = Iso {appIso = fwd, appRevIso = bwd}
+
+revIso :: Isomorphism a b -> Isomorphism b a
+revIso Iso{..} = Iso {appIso = appRevIso, appRevIso = appIso}
