@@ -13,24 +13,24 @@ Tested-With:    GHC == 7.10.2
 Build-Type:     Simple
 
 Synopsis:       Reify constraints to witness values.
-Description
-  Allows you to transform constraints into values. More specifically,
-  you can transform back and forth between the following two types:
-  
-      Cxt => a
-  
-  and:
-  
-      Witness Cxt -> a
-  
-  Witness is a magical type family (implemented by a GHC typechecker plugin)
-  that transforms constraints into values using the following schema:
-  
-   - Typeclass constraints are witnessed by a dictionary of the typeclass' methods
-   - Equality constraints are witnessed by `(:~:)` from `Data.Type.Equality`.
-   - Implicit parameter constraints (with `-XImplicitParams`) are witnessed by a value of the
-     parameter's type
-   - Constraint conjunction turns into a heterogenous list of the coonstraints' witnesses  
+# Description
+#   Allows you to transform constraints into values. More specifically,
+#   you can transform back and forth between the following two types:
+#   
+#       Cxt => a
+#   
+#   and:
+#   
+#       Witness Cxt -> a
+#   
+#   Witness is a magical type family (implemented by a GHC typechecker plugin)
+#   that transforms constraints into values using the following schema:
+#   
+#    - Typeclass constraints are witnessed by a dictionary of the typeclass' methods
+#    - Equality constraints are witnessed by `(:~:)` from `Data.Type.Equality`.
+#    - Implicit parameter constraints (with `-XImplicitParams`) are witnessed by a value of the
+#      parameter's type
+#    - Constraint conjunction turns into a heterogenous list of the coonstraints' witnesses  
 
 Source-Repository head
   type:     git
