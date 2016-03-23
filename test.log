@@ -1,0 +1,19 @@
+[5 of 5] Compiling ConstraintWitness.Test ( ConstraintWitness\Test.hs, ConstraintWitness\Test.o )
+
+ConstraintWitness\Test.hs:15:9:
+    Couldn't match type `(:~:) a' with `Int :~: a'
+    Expected type: Witness (Int ~ a) -> Int :~: a
+      Actual type: Int :~: a -> Int :~: a
+    Relevant bindings include
+      test1 :: Witness (Int ~ a) -> Int :~: a
+        (bound at ConstraintWitness\Test.hs:15:1)
+    In the expression: id
+    In an equation for `test1': test1 = id
+
+ConstraintWitness\Test.hs:18:9:
+    Couldn't match type `(:~:) Int' with `Int :~: Int'
+    Expected type: Witness (Int ~ Int) -> Int :~: Int
+      Actual type: Int :~: Int -> Int :~: Int
+    In the expression: id
+    In an equation for `test2': test2 = id
+ghc.exe: warning: _tzset from msvcrt is linked instead of __imp__tzset
